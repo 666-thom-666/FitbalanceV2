@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — История</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-clock-rotate-left"></i> История питания</h1>
+
+        <div class="card">
+            <div class="inline-form">
+                <input type="date" id="histDate" class="form-input">
+                <button class="btn" onclick="loadHist()">Показать</button>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="histStats" style="display:none">
+            <div class="stat-card"><div class="stat-value" id="hCal">0</div><div class="stat-label">Ккал</div></div>
+            <div class="stat-card b-blue"><div class="stat-value" id="hProt">0</div><div class="stat-label">Белки</div></div>
+            <div class="stat-card b-orange"><div class="stat-value" id="hFat">0</div><div class="stat-label">Жиры</div></div>
+            <div class="stat-card b-purple"><div class="stat-value" id="hCarb">0</div><div class="stat-label">Углеводы</div></div>
+        </div>
+
+        <div class="card">
+            <div id="histList" class="log-list"></div>
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    
+    <script>
+        checkAuth();
+        renderNav('/history');
+
+        const MEALS = { breakfast:'Завтрак', lunch:'Обед', dinner:'Ужин', snack:'Перекус', other:'Другое' };
+        const MEAL_ICONS = { breakfast:'fa-mug-saucer', lunch:'fa-bowl-food', dinner:'fa-drumstick-bite', snack:'fa-cookie-bite', other:'fa-utensils' };
+        document.getElementById('histDate').value = getCurrentDate();
+        async function delFood(id) {
+            await fetch(`${API_URL}/food/${id}`, { method:'DELETE', headers:getHeaders() });
+            loadHist();
+        }
+        async function loadHist() {
+            const date = document.getElementById('histDate').value || getCurrentDate();
+            const r = await fetch(`${API_URL}/food?date=${date}`, { headers: getHeaders() });
+            const rows = await r.json();
+            const list = document.getElementById('histList');
+            const stats = document.getElementById('histStats');
+            if (!rows.length) {
+                stats.style.display = 'none';
+                list.innerHTML = '<p class="empty">За этот день записей нет</p>';
+                return;
+            }
+            let cal=0,p=0,f=0,c=0;
+            rows.forEach(x=>{ cal+=x.calories; p+=x.protein; f+=x.fats; c+=x.carbs; });
+            document.getElementById('hCal').textContent = Math.round(cal);
+            document.getElementById('hProt').textContent = Math.round(p);
+            document.getElementById('hFat').textContent = Math.round(f);
+            document.getElementById('hCarb').textContent = Math.round(c);
+            stats.style.display = 'grid';
+            const groups = {};
+            rows.forEach(x => { (groups[x.meal_type||'other'] ||= []).push(x); });
+            let html = '';
+            ['breakfast','lunch','dinner','snack','other'].forEach(mt => {
+                if (!groups[mt]) return;
+                html += `<div class="meal-group-title"><i class="fas ${MEAL_ICONS[mt]}"></i> ${MEALS[mt]}</div>`;
+                html += groups[mt].map(x => `
+                    <div class="log-item">
+                        <div class="log-main"><div class="log-title">${x.food_name}</div>
+                            <div class="log-sub">${Math.round(x.calories)} ккал · Б ${x.protein} · Ж ${x.fats} · У ${x.carbs}</div></div>
+                        <button class="log-del" onclick="delFood(${x.id})"><i class="fas fa-trash"></i></button>
+                    </div>`).join('');
+            });
+            list.innerHTML = html;
+        }
+        loadHist();
+
+    </script>
+</body>
+</html>

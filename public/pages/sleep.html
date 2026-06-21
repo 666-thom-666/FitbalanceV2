@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Сон</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-moon"></i> Сон</h1>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-bed"></i> Записать сон</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Часов сна</label>
+                    <input type="number" id="sHours" class="form-input" step="0.1" placeholder="8" min="0" max="24">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Качество</label>
+                    <select id="sQuality" class="form-input">
+                        <option value="5">Отличное</option>
+                        <option value="4">Хорошее</option>
+                        <option value="3" selected>Среднее</option>
+                        <option value="2">Плохое</option>
+                        <option value="1">Очень плохое</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Лёг спать</label>
+                    <input type="time" id="sBed" class="form-input" value="23:00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Проснулся</label>
+                    <input type="time" id="sWake" class="form-input" value="07:00">
+                </div>
+            </div>
+            <button class="btn btn-block" onclick="saveSleep()"><i class="fas fa-floppy-disk"></i> Сохранить</button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-chart-line"></i> Сон за неделю</h3>
+            <canvas id="sleepChart" height="120"></canvas>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-clock-rotate-left"></i> История</h3>
+            <div id="sleepList" class="log-list"></div>
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    <script src="/js/lib/chart.min.js"></script>
+    <script>
+        checkAuth();
+        renderNav('/sleep');
+
+        const QLAB = {5:'Отличное',4:'Хорошее',3:'Среднее',2:'Плохое',1:'Очень плохое'};
+        function autoHours() {
+            const b = document.getElementById('sBed').value, w = document.getElementById('sWake').value;
+            if (!b || !w) return;
+            let [bh,bm]=b.split(':').map(Number), [wh,wm]=w.split(':').map(Number);
+            let diff = (wh*60+wm) - (bh*60+bm); if (diff<0) diff+=24*60;
+            document.getElementById('sHours').value = (diff/60).toFixed(1);
+        }
+        document.getElementById('sBed').addEventListener('change', autoHours);
+        document.getElementById('sWake').addEventListener('change', autoHours);
+        autoHours();
+        async function saveSleep() {
+            const hours = parseFloat(document.getElementById('sHours').value);
+            if (!hours) return showNotification('Укажите часы сна', 'error');
+            await fetch(`${API_URL}/sleep`, { method:'POST', headers:getHeaders(), body:JSON.stringify({
+                hours, quality:parseInt(document.getElementById('sQuality').value),
+                bedtime:document.getElementById('sBed').value, waketime:document.getElementById('sWake').value,
+                date:getCurrentDate() }) });
+            showNotification('Сон записан'); loadSleep();
+        }
+        async function delSleep(id) {
+            await fetch(`${API_URL}/sleep/${id}`, { method:'DELETE', headers:getHeaders() });
+            loadSleep();
+        }
+        let sleepChartObj = null;
+        async function loadSleep() {
+            const r = await fetch(`${API_URL}/sleep`, { headers: getHeaders() });
+            const rows = await r.json();
+            const list = document.getElementById('sleepList');
+            list.innerHTML = rows.length ? rows.map(s => `
+                <div class="log-item">
+                    <div class="log-icon" style="color:var(--purple)"><i class="fas fa-moon"></i></div>
+                    <div class="log-main"><div class="log-title">${s.hours} ч · ${QLAB[s.quality]||'—'}</div>
+                        <div class="log-sub">${ruDate(s.date)} · ${s.bedtime||'?'}–${s.waketime||'?'}</div></div>
+                    <button class="log-del" onclick="delSleep(${s.id})"><i class="fas fa-trash"></i></button>
+                </div>`).join('') : '<p class="empty">Записей пока нет</p>';
+            // график
+            const sr = await fetch(`${API_URL}/stats/sleep?days=7`, { headers: getHeaders() });
+            const data = await sr.json();
+            const map = {}; data.forEach(x => map[x.date] = x.value);
+            const labels=[], vals=[];
+            for (let i=6;i>=0;i--){ const dt=new Date(); dt.setDate(dt.getDate()-i); const k=formatDate(dt); labels.push(ruDate(k)); vals.push(map[k]||0); }
+            const css = getComputedStyle(document.documentElement);
+            if (sleepChartObj) sleepChartObj.destroy();
+            sleepChartObj = new Chart(document.getElementById('sleepChart'), {
+                type:'bar',
+                data:{ labels, datasets:[{ label:'Часы сна', data:vals, backgroundColor:css.getPropertyValue('--purple'), borderRadius:6 }] },
+                options:{ plugins:{legend:{display:false}}, scales:{ y:{suggestedMax:10,ticks:{color:css.getPropertyValue('--text-secondary')},grid:{color:css.getPropertyValue('--border-color')}}, x:{ticks:{color:css.getPropertyValue('--text-secondary')},grid:{display:false}} } }
+            });
+        }
+        loadSleep();
+
+    </script>
+</body>
+</html>

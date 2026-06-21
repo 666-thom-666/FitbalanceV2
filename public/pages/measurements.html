@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Замеры</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-ruler"></i> Вес и замеры</h1>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-weight-scale"></i> Текущий вес</h3>
+            <div class="inline-form">
+                <input type="number" id="wInput" class="form-input" step="0.1" placeholder="Вес, кг">
+                <button class="btn" onclick="saveWeight()">Записать</button>
+            </div>
+            <canvas id="weightChart" height="120" style="margin-top:16px"></canvas>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-ruler-combined"></i> Замеры тела (см)</h3>
+            <div class="form-grid">
+                <div class="form-group"><label class="form-label">Грудь</label><input type="number" id="mChest" class="form-input" step="0.1"></div>
+                <div class="form-group"><label class="form-label">Талия</label><input type="number" id="mWaist" class="form-input" step="0.1"></div>
+                <div class="form-group"><label class="form-label">Бёдра</label><input type="number" id="mHips" class="form-input" step="0.1"></div>
+                <div class="form-group"><label class="form-label">Руки</label><input type="number" id="mArms" class="form-input" step="0.1"></div>
+                <div class="form-group"><label class="form-label">Ноги</label><input type="number" id="mThighs" class="form-input" step="0.1"></div>
+                <div class="form-group"><label class="form-label">% жира</label><input type="number" id="mFat" class="form-input" step="0.1"></div>
+            </div>
+            <button class="btn btn-block" onclick="saveMeas()"><i class="fas fa-floppy-disk"></i> Сохранить замеры</button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-clock-rotate-left"></i> История замеров</h3>
+            <div id="measList" class="log-list"></div>
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    <script src="/js/lib/chart.min.js"></script>
+    <script>
+        checkAuth();
+        renderNav('/measurements');
+
+        async function saveWeight() {
+            const w = parseFloat(document.getElementById('wInput').value);
+            if (!w) return showNotification('Укажите вес', 'error');
+            await fetch(`${API_URL}/weight`, { method:'POST', headers:getHeaders(), body:JSON.stringify({ weight:w, date:getCurrentDate() }) });
+            document.getElementById('wInput').value='';
+            showNotification('Вес записан'); loadWeightChart(); loadUserProfile();
+        }
+        let wChart = null;
+        async function loadWeightChart() {
+            const r = await fetch(`${API_URL}/stats/weight?days=90`, { headers: getHeaders() });
+            const rows = await r.json();
+            const css = getComputedStyle(document.documentElement);
+            if (wChart) wChart.destroy();
+            wChart = new Chart(document.getElementById('weightChart'), {
+                type:'line',
+                data:{ labels: rows.map(x=>ruDate(x.date)), datasets:[{ label:'Вес, кг', data: rows.map(x=>x.value),
+                    borderColor:css.getPropertyValue('--green-primary'), backgroundColor:'rgba(0,255,65,0.1)', fill:true, tension:0.3, pointRadius:3 }] },
+                options:{ plugins:{legend:{display:false}}, scales:{ y:{ticks:{color:css.getPropertyValue('--text-secondary')},grid:{color:css.getPropertyValue('--border-color')}}, x:{ticks:{color:css.getPropertyValue('--text-secondary')},grid:{display:false}} } }
+            });
+        }
+        async function saveMeas() {
+            const body = {
+                chest:val('mChest'), waist:val('mWaist'), hips:val('mHips'),
+                arms:val('mArms'), thighs:val('mThighs'), body_fat:val('mFat'), date:getCurrentDate()
+            };
+            await fetch(`${API_URL}/measurements`, { method:'POST', headers:getHeaders(), body:JSON.stringify(body) });
+            ['mChest','mWaist','mHips','mArms','mThighs','mFat'].forEach(id=>document.getElementById(id).value='');
+            showNotification('Замеры сохранены'); loadMeas();
+        }
+        function val(id){ const v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; }
+        async function delMeas(id) {
+            await fetch(`${API_URL}/measurements/${id}`, { method:'DELETE', headers:getHeaders() });
+            loadMeas();
+        }
+        async function loadMeas() {
+            const r = await fetch(`${API_URL}/measurements`, { headers: getHeaders() });
+            const rows = await r.json();
+            const list = document.getElementById('measList');
+            if (!rows.length) { list.innerHTML = '<p class="empty">Записей пока нет</p>'; return; }
+            list.innerHTML = rows.map(m => {
+                const parts = [];
+                if (m.chest) parts.push(`Грудь ${m.chest}`); if (m.waist) parts.push(`Талия ${m.waist}`);
+                if (m.hips) parts.push(`Бёдра ${m.hips}`); if (m.arms) parts.push(`Руки ${m.arms}`);
+                if (m.thighs) parts.push(`Ноги ${m.thighs}`); if (m.body_fat) parts.push(`Жир ${m.body_fat}%`);
+                return `<div class="log-item">
+                    <div class="log-icon" style="color:var(--orange)"><i class="fas fa-ruler"></i></div>
+                    <div class="log-main"><div class="log-title">${ruDate(m.date)}</div>
+                        <div class="log-sub">${parts.join(' · ')||'—'}</div></div>
+                    <button class="log-del" onclick="delMeas(${m.id})"><i class="fas fa-trash"></i></button>
+                </div>`;
+            }).join('');
+        }
+        loadWeightChart(); loadMeas();
+
+    </script>
+</body>
+</html>

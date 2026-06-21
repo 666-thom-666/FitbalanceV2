@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Вход</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card card">
+            <div class="auth-logo">
+                <i class="fas fa-heart-pulse"></i>
+                <h1>FITBALANCE</h1>
+                <p style="font-size:.85rem;color:var(--text-muted);letter-spacing:1px;margin-top:.3rem">ФИТНЕС-ТРЕКЕР</p>
+            </div>
+
+            <div id="loginForm">
+                <h2 class="card-title text-center" style="justify-content:center">Вход в систему</h2>
+                <div id="loginAlert"></div>
+                <div class="form-group">
+                    <label class="form-label">Имя пользователя или Email</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="Введите имя пользователя">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Введите пароль">
+                </div>
+                <button onclick="login()" class="btn btn-primary btn-block mt-1"><i class="fas fa-right-to-bracket"></i> Войти</button>
+                <p class="text-center mt-2 muted">Нет аккаунта?
+                    <a href="#" onclick="showRegister()" style="color:var(--green-primary)">Зарегистрироваться</a></p>
+            </div>
+
+            <div id="registerForm" style="display:none">
+                <h2 class="card-title text-center" style="justify-content:center">Регистрация</h2>
+                <div id="registerAlert"></div>
+                <div class="form-group"><label class="form-label">Полное имя</label>
+                    <input type="text" id="regFullName" class="form-input" placeholder="Введите полное имя"></div>
+                <div class="form-group"><label class="form-label">Имя пользователя</label>
+                    <input type="text" id="regUsername" class="form-input" placeholder="Придумайте имя пользователя"></div>
+                <div class="form-group"><label class="form-label">Email</label>
+                    <input type="email" id="regEmail" class="form-input" placeholder="Введите email"></div>
+                <div class="form-group"><label class="form-label">Пароль</label>
+                    <input type="password" id="regPassword" class="form-input" placeholder="Минимум 6 символов"></div>
+                <button onclick="register()" class="btn btn-primary btn-block mt-1"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
+                <p class="text-center mt-2 muted">Уже есть аккаунт?
+                    <a href="#" onclick="showLogin()" style="color:var(--green-primary)">Войти</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

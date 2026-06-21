@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Вода</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-glass-water"></i> Вода</h1>
+
+        <div class="card" style="text-align:center">
+            <div class="ring-wrap-single">
+                <svg viewBox="0 0 200 200" class="ring-svg-single">
+                    <circle class="ring-track" cx="100" cy="100" r="84" stroke-width="16"/>
+                    <circle id="waterRing" class="ring-progress" cx="100" cy="100" r="84" stroke-width="16" stroke="var(--blue)"/>
+                </svg>
+                <div class="ring-center">
+                    <div class="big-counter" id="waterTotal">0</div>
+                    <div class="ring-center-sub">из <span id="waterGoal">2000</span> мл</div>
+                </div>
+            </div>
+            <div class="progress-sub" id="waterPct">0% дневной нормы</div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-plus"></i> Добавить</h3>
+            <div class="chips">
+                <button class="chip" onclick="addWater(200)"><i class="fas fa-mug-hot"></i> 200 мл</button>
+                <button class="chip" onclick="addWater(250)"><i class="fas fa-glass-water"></i> 250 мл</button>
+                <button class="chip" onclick="addWater(330)"><i class="fas fa-bottle-water"></i> 330 мл</button>
+                <button class="chip" onclick="addWater(500)"><i class="fas fa-bottle-water"></i> 500 мл</button>
+            </div>
+            <div class="inline-form">
+                <input type="number" id="customWater" class="form-input" placeholder="Свой объём, мл" min="1">
+                <button class="btn" onclick="addCustomWater()">Добавить</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-list"></i> Сегодня</h3>
+            <div id="waterList" class="log-list"></div>
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    
+    <script>
+        checkAuth();
+        renderNav('/water');
+
+        let waterGoal = 2000;
+        async function loadWater() {
+            const prof = getUser() || await loadUserProfile();
+            waterGoal = prof?.water_goal || 2000;
+            document.getElementById('waterGoal').textContent = waterGoal;
+            const r = await fetch(`${API_URL}/water?date=${getCurrentDate()}`, { headers: getHeaders() });
+            const d = await r.json();
+            const total = d.total || 0;
+            document.getElementById('waterTotal').textContent = total;
+            const pct = Math.min(Math.round(total / waterGoal * 100), 100);
+            document.getElementById('waterPct').textContent = pct + '% дневной нормы';
+            const c = 2 * Math.PI * 84;
+            const ring = document.getElementById('waterRing');
+            ring.style.strokeDasharray = c;
+            ring.style.strokeDashoffset = c * (1 - Math.min(total / waterGoal, 1));
+            const list = document.getElementById('waterList');
+            if (!d.entries.length) { list.innerHTML = '<p class="empty">Записей пока нет</p>'; return; }
+            list.innerHTML = d.entries.map(e => `
+                <div class="log-item">
+                    <div class="log-icon" style="color:var(--blue)"><i class="fas fa-droplet"></i></div>
+                    <div class="log-main"><div class="log-title">${e.amount_ml} мл</div>
+                        <div class="log-sub">${new Date(e.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</div></div>
+                    <button class="log-del" onclick="delWater(${e.id})"><i class="fas fa-trash"></i></button>
+                </div>`).join('');
+        }
+        async function addWater(ml) {
+            await fetch(`${API_URL}/water`, { method:'POST', headers:getHeaders(), body:JSON.stringify({ amount_ml:ml, date:getCurrentDate() }) });
+            showNotification(`+${ml} мл`); loadWater();
+        }
+        function addCustomWater() {
+            const v = parseInt(document.getElementById('customWater').value);
+            if (v > 0) { addWater(v); document.getElementById('customWater').value=''; }
+        }
+        async function delWater(id) {
+            await fetch(`${API_URL}/water/${id}`, { method:'DELETE', headers:getHeaders() });
+            loadWater();
+        }
+        loadWater();
+
+    </script>
+</body>
+</html>

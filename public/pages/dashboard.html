@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Панель</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-house"></i> Привет, <span id="userName"></span>!</h1>
+
+        <div class="card">
+            <div class="rings-wrap">
+                <svg class="ring-svg" viewBox="0 0 200 200">
+                    <circle class="ring-track" cx="100" cy="100" r="84" stroke-width="14"/>
+                    <circle class="ring-track" cx="100" cy="100" r="64" stroke-width="14"/>
+                    <circle class="ring-track" cx="100" cy="100" r="44" stroke-width="14"/>
+                    <circle id="ringSteps"  class="ring-progress" cx="100" cy="100" r="84" stroke-width="14" stroke="var(--green-primary)"/>
+                    <circle id="ringActive" class="ring-progress" cx="100" cy="100" r="64" stroke-width="14" stroke="var(--orange)"/>
+                    <circle id="ringWater"  class="ring-progress" cx="100" cy="100" r="44" stroke-width="14" stroke="var(--blue)"/>
+                </svg>
+                <div class="ring-legend">
+                    <div class="ring-legend-item"><span class="ring-dot" style="background:var(--green-primary)"></span>
+                        <div><div class="lbl">Шаги</div><div class="val" id="legSteps">0 / 0</div></div></div>
+                    <div class="ring-legend-item"><span class="ring-dot" style="background:var(--orange)"></span>
+                        <div><div class="lbl">Активные минуты</div><div class="val" id="legActive">0 / 0</div></div></div>
+                    <div class="ring-legend-item"><span class="ring-dot" style="background:var(--blue)"></span>
+                        <div><div class="lbl">Вода</div><div class="val" id="legWater">0 / 0 мл</div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="sCalIn">0</div><div class="stat-label">Калорий съедено</div></div>
+            <div class="stat-card b-orange"><div class="stat-value" id="sCalOut">0</div><div class="stat-label">Сожжено</div></div>
+            <div class="stat-card b-blue"><div class="stat-value" id="sRemain">0</div><div class="stat-label">Осталось до нормы</div></div>
+            <div class="stat-card b-purple"><div class="stat-value" id="sSleep">—</div><div class="stat-label">Сон, ч</div></div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-bolt"></i> Быстрые действия</h3>
+            <div class="chips">
+                <a class="chip" href="/food"><i class="fas fa-utensils"></i> Добавить еду</a>
+                <a class="chip" href="/activity"><i class="fas fa-person-running"></i> Тренировка</a>
+                <button class="chip" onclick="quickWater()"><i class="fas fa-droplet"></i> +250 мл воды</button>
+                <a class="chip" href="/water"><i class="fas fa-glass-water"></i> Вода</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-shoe-prints"></i> Шаги за неделю</h3>
+            <canvas id="weekSteps" height="120"></canvas>
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    <script src="/js/lib/chart.min.js"></script>
+    <script>
+        checkAuth();
+        renderNav('/dashboard');
+
+        document.getElementById('userName').textContent = getUser()?.full_name || getUser()?.username || 'спортсмен';
+        const R = { 84: 2*Math.PI*84, 64: 2*Math.PI*64, 44: 2*Math.PI*44 };
+        function setRing(id, r, val, goal) {
+            const c = R[r], pct = Math.min(val/(goal||1),1);
+            const el = document.getElementById(id);
+            el.style.strokeDasharray = c;
+            el.style.strokeDashoffset = c*(1-pct);
+        }
+        async function loadDash() {
+            try {
+                const r = await fetch(`${API_URL}/dashboard/${getCurrentDate()}`, { headers: getHeaders() });
+                if (!r.ok) return;
+                const d = await r.json();
+                const g = d.goals || {};
+                const steps = d.steps?.steps || 0, active = d.workouts?.minutes || 0, water = d.water || 0;
+                setRing('ringSteps', 84, steps, g.step_goal || 10000);
+                setRing('ringActive', 64, active, g.active_minutes_goal || 30);
+                setRing('ringWater', 44, water, g.water_goal || 2000);
+                document.getElementById('legSteps').textContent = `${steps} / ${g.step_goal||10000}`;
+                document.getElementById('legActive').textContent = `${Math.round(active)} / ${g.active_minutes_goal||30} мин`;
+                document.getElementById('legWater').textContent = `${water} / ${g.water_goal||2000} мл`;
+                const calIn = Math.round(d.food?.c || 0), calOut = Math.round(d.workouts?.burned || 0);
+                const goalCal = g.daily_calorie_goal || 2000;
+                document.getElementById('sCalIn').textContent = calIn;
+                document.getElementById('sCalOut').textContent = calOut;
+                document.getElementById('sRemain').textContent = Math.round(goalCal - calIn + calOut);
+                document.getElementById('sSleep').textContent = (d.sleep?.hours != null) ? (+d.sleep.hours).toFixed(1) : '—';
+            } catch(e){ console.error(e); }
+        }
+        async function quickWater() {
+            await fetch(`${API_URL}/water`, { method:'POST', headers:getHeaders(), body:JSON.stringify({ amount_ml:250, date:getCurrentDate() }) });
+            showNotification('+250 мл воды'); loadDash();
+        }
+        async function loadWeekSteps() {
+            try {
+                const r = await fetch(`${API_URL}/stats/steps?days=7`, { headers: getHeaders() });
+                const rows = await r.json();
+                const map = {}; rows.forEach(x => map[x.date] = x.value);
+                const labels = [], data = [];
+                for (let i=6;i>=0;i--){ const dt=new Date(); dt.setDate(dt.getDate()-i); const k=dt.toISOString().split('T')[0]; labels.push(ruDate(k)); data.push(map[k]||0); }
+                const css = getComputedStyle(document.documentElement);
+                new Chart(document.getElementById('weekSteps'), {
+                    type:'bar',
+                    data:{ labels, datasets:[{ label:'Шаги', data, backgroundColor: css.getPropertyValue('--green-primary'), borderRadius:6 }] },
+                    options:{ plugins:{legend:{display:false}}, scales:{ y:{ticks:{color:css.getPropertyValue('--text-secondary')},grid:{color:css.getPropertyValue('--border-color')}}, x:{ticks:{color:css.getPropertyValue('--text-secondary')},grid:{display:false}} } }
+                });
+            } catch(e){ console.error(e); }
+        }
+        loadDash(); loadWeekSteps();
+
+    </script>
+</body>
+</html>

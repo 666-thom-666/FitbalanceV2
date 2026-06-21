@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Активность</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-person-running"></i> Активность</h1>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-shoe-prints"></i> Шагомер</h3>
+            <p class="muted" style="font-size:.85rem;margin-bottom:.6rem">Использует датчик движения телефона. Откройте страницу на смартфоне и нажмите «Старт».</p>
+            <div class="big-counter" id="stepCount">0</div>
+            <div class="text-center muted" style="margin:.4rem 0 1rem"><span id="stepDist">0.00 км</span> · <span id="stepKcal">0 ккал</span></div>
+            <div class="flex gap-1">
+                <button class="btn btn-primary grow" id="pedoBtn" onclick="togglePedometer()"><i class="fas fa-play"></i> Старт</button>
+                <button class="btn btn-ghost" onclick="saveSteps()"><i class="fas fa-floppy-disk"></i> Сохранить</button>
+            </div>
+            <div class="form-group mt-2">
+                <label class="form-label">Или введите шаги вручную</label>
+                <div class="flex gap-1">
+                    <input type="number" id="manualSteps" class="form-input" placeholder="например 8500">
+                    <button class="btn btn-secondary" onclick="setManualSteps()">ОК</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-location-dot"></i> GPS-трекер пробежки</h3>
+            <p class="muted" style="font-size:.85rem;margin-bottom:.6rem">Отслеживает маршрут по геолокации телефона.</p>
+            <div class="stats-grid" style="margin-bottom:1rem">
+                <div class="stat-card"><div class="stat-value" id="runDist">0.00</div><div class="stat-label">км</div></div>
+                <div class="stat-card b-blue"><div class="stat-value" id="runTime">00:00</div><div class="stat-label">время</div></div>
+                <div class="stat-card b-orange"><div class="stat-value" id="runPace">—</div><div class="stat-label">мин/км</div></div>
+                <div class="stat-card b-danger"><div class="stat-value" id="runKcal">0</div><div class="stat-label">ккал</div></div>
+            </div>
+            <div class="flex gap-1">
+                <button class="btn btn-primary grow" id="runBtn" onclick="toggleRun()"><i class="fas fa-play"></i> Начать</button>
+                <button class="btn btn-danger" onclick="finishRun()"><i class="fas fa-flag-checkered"></i> Финиш</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-dumbbell"></i> Записать тренировку</h3>
+            <div class="chips" id="typeChips"></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Длительность, мин</label><input type="number" id="wDur" class="form-input" placeholder="45" oninput="autoKcal()"></div>
+                <div class="form-group"><label class="form-label">Дистанция, км</label><input type="number" id="wDist" class="form-input" step="0.1" placeholder="0"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Калории</label><input type="number" id="wKcal" class="form-input" placeholder="авто"></div>
+                <div class="form-group"><label class="form-label">Ср. пульс</label><input type="number" id="wHr" class="form-input" placeholder="—"></div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="addWorkout()"><i class="fas fa-plus"></i> Сохранить тренировку</button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-heart-pulse"></i> Пульс</h3>
+            <div class="flex gap-1">
+                <input type="number" id="hrInput" class="form-input" placeholder="уд/мин">
+                <select id="hrCtx" class="form-select" style="max-width:140px">
+                    <option value="rest">Покой</option><option value="active">Нагрузка</option><option value="morning">Утро</option>
+                </select>
+                <button class="btn btn-secondary" onclick="addHr()">+</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-list-check"></i> Сегодня</h3>
+            <div id="workoutList"><div class="spinner"></div></div>
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    
+    <script>
+        checkAuth();
+        renderNav('/activity');
+
+        let curType = 'running';
+        const labels = WORKOUT_LABELS;
+        document.getElementById('typeChips').innerHTML = Object.keys(labels).map(k =>
+            `<button class="chip ${k==='running'?'active':''}" data-t="${k}" onclick="pickType('${k}')"><i class="fas ${WORKOUT_ICONS[k]}"></i> ${labels[k]}</button>`).join('');
+        function pickType(t){ curType=t; document.querySelectorAll('#typeChips .chip').forEach(c=>c.classList.toggle('active', c.dataset.t===t)); autoKcal(); }
+        function userWeight(){ return getUser()?.weight || 70; }
+        function autoKcal(){ const d=parseFloat(document.getElementById('wDur').value); if(d) document.getElementById('wKcal').value = workoutCalories(curType,d,userWeight()); }
+
+        // ---------- Шагомер (DeviceMotion) ----------
+        let pedoOn=false, steps=0, lastMag=0, lastPeak=0, ticking=null;
+        function renderSteps(){ document.getElementById('stepCount').textContent=steps;
+            const km=(steps*0.000762).toFixed(2); document.getElementById('stepDist').textContent=km+' км';
+            document.getElementById('stepKcal').textContent=Math.round(steps*0.04)+' ккал'; }
+        function onMotion(e){
+            const a=e.accelerationIncludingGravity||e.acceleration; if(!a) return;
+            const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+            const now=Date.now();
+            if(mag-lastMag>2.2 && now-lastPeak>300){ steps++; lastPeak=now; renderSteps(); }
+            lastMag=mag;
+        }
+        async function togglePedometer(){
+            if(pedoOn){ pedoOn=false; window.removeEventListener('devicemotion',onMotion);
+                document.getElementById('pedoBtn').innerHTML='<i class="fas fa-play"></i> Старт'; document.getElementById('stepCount').classList.remove('pulse'); return; }
+            if(typeof DeviceMotionEvent!=='undefined' && DeviceMotionEvent.requestPermission){
+                try{ const p=await DeviceMotionEvent.requestPermission(); if(p!=='granted'){ showNotification('Нет доступа к датчику','error'); return; } }catch(e){}
+            }
+            if(typeof DeviceMotionEvent==='undefined'){ showNotification('Датчик движения доступен только на телефоне','error'); }
+            pedoOn=true; window.addEventListener('devicemotion',onMotion);
+            document.getElementById('pedoBtn').innerHTML='<i class="fas fa-pause"></i> Пауза';
+            document.getElementById('stepCount').classList.add('pulse');
+        }
+        async function saveSteps(){
+            await fetch(`${API_URL}/steps`,{method:'POST',headers:getHeaders(),body:JSON.stringify({steps,distance_km:+(steps*0.000762).toFixed(2),calories:Math.round(steps*0.04),date:getCurrentDate()})});
+            showNotification('Шаги сохранены');
+        }
+        function setManualSteps(){ const v=parseInt(document.getElementById('manualSteps').value); if(v){ steps=v; renderSteps(); saveSteps(); } }
+
+        // ---------- GPS-трекер ----------
+        let runOn=false, watchId=null, runDist=0, lastPos=null, runStart=0, runTimer=null;
+        function hav(a,b){ const R=6371,toR=x=>x*Math.PI/180; const dLat=toR(b.lat-a.lat),dLon=toR(b.lng-a.lng);
+            const s=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(s)); }
+        function fmtTime(ms){ const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+        function tickRun(){ const el=Date.now()-runStart; document.getElementById('runTime').textContent=fmtTime(el);
+            const min=el/60000; document.getElementById('runPace').textContent=runDist>0.01?(min/runDist).toFixed(1):'—';
+            document.getElementById('runKcal').textContent=workoutCalories('running',min,userWeight()); }
+        function toggleRun(){
+            if(runOn){ runOn=false; clearInterval(runTimer); if(watchId) navigator.geolocation.clearWatch(watchId);
+                document.getElementById('runBtn').innerHTML='<i class="fas fa-play"></i> Продолжить'; return; }
+            if(!navigator.geolocation){ showNotification('Геолокация недоступна','error'); return; }
+            runOn=true; if(!runStart) runStart=Date.now();
+            runTimer=setInterval(tickRun,1000);
+            watchId=navigator.geolocation.watchPosition(p=>{
+                const cur={lat:p.coords.latitude,lng:p.coords.longitude};
+                if(lastPos){ const d=hav(lastPos,cur); if(d<0.5) runDist+=d; document.getElementById('runDist').textContent=runDist.toFixed(2); }
+                lastPos=cur;
+            }, ()=>showNotification('Не удалось получить геопозицию','error'), {enableHighAccuracy:true,maximumAge:1000});
+            document.getElementById('runBtn').innerHTML='<i class="fas fa-pause"></i> Пауза';
+        }
+        async function finishRun(){
+            runOn=false; clearInterval(runTimer); if(watchId) navigator.geolocation.clearWatch(watchId);
+            const min=(Date.now()-runStart)/60000; if(min<0.1){ showNotification('Пробежка не начата','error'); return; }
+            await fetch(`${API_URL}/workouts`,{method:'POST',headers:getHeaders(),body:JSON.stringify({type:'running',duration_min:+min.toFixed(1),distance_km:+runDist.toFixed(2),calories_burned:workoutCalories('running',min,userWeight()),date:getCurrentDate()})});
+            showNotification('Пробежка сохранена'); runDist=0; runStart=0; lastPos=null;
+            document.getElementById('runDist').textContent='0.00'; document.getElementById('runTime').textContent='00:00';
+            document.getElementById('runBtn').innerHTML='<i class="fas fa-play"></i> Начать'; loadWorkouts();
+        }
+
+        // ---------- Тренировки ----------
+        async function addWorkout(){
+            const dur=parseFloat(document.getElementById('wDur').value); if(!dur){ showNotification('Укажите длительность','error'); return; }
+            const body={ type:curType, duration_min:dur, distance_km:parseFloat(document.getElementById('wDist').value)||0,
+                calories_burned:parseFloat(document.getElementById('wKcal').value)||workoutCalories(curType,dur,userWeight()),
+                avg_heart_rate:parseInt(document.getElementById('wHr').value)||null, date:getCurrentDate() };
+            const r=await fetch(`${API_URL}/workouts`,{method:'POST',headers:getHeaders(),body:JSON.stringify(body)});
+            if(r.ok){ showNotification('Тренировка сохранена'); ['wDur','wDist','wKcal','wHr'].forEach(i=>document.getElementById(i).value=''); loadWorkouts(); }
+        }
+        async function addHr(){ const bpm=parseInt(document.getElementById('hrInput').value); if(!bpm) return;
+            await fetch(`${API_URL}/heartrate`,{method:'POST',headers:getHeaders(),body:JSON.stringify({bpm,context:document.getElementById('hrCtx').value,date:getCurrentDate()})});
+            document.getElementById('hrInput').value=''; showNotification('Пульс записан'); }
+        async function delWorkout(id){ await fetch(`${API_URL}/workouts/${id}`,{method:'DELETE',headers:getHeaders()}); loadWorkouts(); }
+        async function loadWorkouts(){
+            const r=await fetch(`${API_URL}/workouts?date=${getCurrentDate()}`,{headers:getHeaders()});
+            const rows=await r.json(); const el=document.getElementById('workoutList');
+            if(!rows.length){ el.innerHTML='<p class="muted">Сегодня тренировок нет. Начните прямо сейчас!</p>'; return; }
+            el.innerHTML=rows.map(w=>`<div class="log-item"><div class="li-main">
+                <div class="li-icon"><i class="fas ${WORKOUT_ICONS[w.type]||'fa-heart-pulse'}"></i></div>
+                <div><div class="li-title">${WORKOUT_LABELS[w.type]||w.type}</div>
+                <div class="li-sub">${w.duration_min} мин · ${w.distance_km||0} км · ${Math.round(w.calories_burned)} ккал</div></div></div>
+                <button class="btn btn-danger" onclick="delWorkout(${w.id})"><i class="fas fa-trash"></i></button></div>`).join('');
+        }
+        renderSteps(); loadWorkouts();
+
+    </script>
+</body>
+</html>

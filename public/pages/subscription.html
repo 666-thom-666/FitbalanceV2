@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — Подписка Premium</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <style>
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 16px;
+        }
+        .pricing-card {
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            background: var(--card);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+        .pricing-card.popular {
+            border-color: #00ff41;
+            box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.15);
+        }
+        .pricing-card.popular::before {
+            content: "РЕКОМЕНДУЕМ";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ff41;
+            color: #000;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 16px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+        }
+        .plan-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .plan-price {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 12px 0;
+        }
+        .plan-price small {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.7;
+        }
+        .plan-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px;
+        }
+        .benefits-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+        .benefits-list li i {
+            color: #00ff41;
+            width: 20px;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .status-badge.premium {
+            background: linear-gradient(90deg, #00ff41, #00cc33);
+            color: #000;
+        }
+        .status-badge.free {
+            background: var(--border);
+            color: var(--text);
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin: 32px 0 12px;
+            font-weight: 700;
+        }
+        .saving {
+            color: #00ff41;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-crown"></i> Подписка Premium</h1>
+
+        <!-- Текущий статус -->
+        <div class="card" id="statusCard">
+            <h3 class="card-title"><i class="fas fa-id-card"></i> Ваш текущий план</h3>
+            <div id="statusContent" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div id="planBadge" class="status-badge free">
+                        <i class="fas fa-user"></i> <span id="planName">Бесплатный</span>
+                    </div>
+                    <p id="planUntil" style="margin:8px 0 0; color:var(--text-secondary); font-size:0.9rem;"></p>
+                </div>
+                <div id="upgradeHint" style="display:none;">
+                    <button class="btn" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">
+                        <i class="fas fa-arrow-up"></i> Улучшить план
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Преимущества -->
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-gem"></i> Что даёт Premium</h3>
+            <div class="pricing-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                <div>
+                    <ul class="benefits-list">
+                        <li><i class="fas fa-check-circle"></i> Расширенная аналитика и прогнозы прогресса</li>
+                        <li><i class="fas fa-check-circle"></i> Персональные рекомендации по тренировкам и питанию</li>
+                        <li><i class="fas fa-check-circle"></i> Детальные отчёты в PDF и экспорт данных</li>
+                        <li><i class="fas fa-check-circle"></i> Неограниченная история и количество записей</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul class="benefits-list">
+                        <li><i class="fas fa-check-circle"></i> Продвинутые графики и сравнение периодов</li>
+                        <li><i class="fas fa-check-circle"></i> Приоритетная поддержка и ранний доступ к новым функциям</li>
+                        <li><i class="fas fa-check-circle"></i> Кольца активности PRO и кастомные цели</li>
+                        <li><i class="fas fa-check-circle"></i> Без ограничений и рекламы</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Планы подписки -->
+        <h2 class="section-title" id="pricing"><i class="fas fa-tags"></i> Выберите удобный план</h2>
+        <div class="pricing-grid">
+            <!-- Free -->
+            <div class="pricing-card">
+                <div class="plan-name">Бесплатный</div>
+                <div class="plan-price">0 ₽ <small>/ навсегда</small></div>
+                <div class="plan-desc">Базовый функционал для начала пути к здоровью</div>
+                <ul class="benefits-list" style="margin-bottom:16px;">
+                    <li><i class="fas fa-check"></i> Основные трекеры (вес, шаги, вода, сон)</li>
+                    <li><i class="fas fa-check"></i> Журнал тренировок и питания</li>
+                    <li><i class="fas fa-check"></i> Простые графики прогресса</li>
+                </ul>
+                <button class="btn btn-block" disabled style="opacity:0.6; cursor:default;">
+                    <i class="fas fa-check"></i> Текущий план
+                </button>
+            </div>
+
+            <!-- Monthly -->
+            <div class="pricing-card">
+                <div class="plan-name">Месячный</div>
+                <div class="plan-price">299 ₽ <small>/ месяц</small></div>
+                <div class="plan-desc">Полный доступ ко всем функциям. Отменить можно в любой момент.</div>
+                <ul class="benefits-list" style="margin-bottom:16px;">
+                    <li><i class="fas fa-check"></i> Всё из бесплатного плана</li>
+                    <li><i class="fas fa-check"></i> Расширенная аналитика и ИИ-рекомендации</li>
+                    <li><i class="fas fa-check"></i> Экспорт отчётов и неограниченная история</li>
+                    <li><i class="fas fa-check"></i> Приоритетная поддержка</li>
+                </ul>
+                <button class="btn btn-block btn-primary" onclick="subscribe('monthly')">
+                    <i class="fas fa-credit-card"></i> Подписаться за 299 ₽
+                </button>
+            </div>
+
+            <!-- Yearly - популярный -->
+            <div class="pricing-card popular">
+                <div class="plan-name">Годовой</div>
+                <div class="plan-price">2 490 ₽ <small>/ год</small></div>
+                <div class="plan-desc">
+                    Лучшая цена. <span class="saving">Экономия 1 098 ₽</span> по сравнению с помесячной оплатой.
+                </div>
+                <ul class="benefits-list" style="margin-bottom:16px;">
+                    <li><i class="fas fa-check"></i> Всё из месячного плана</li>
+                    <li><i class="fas fa-check"></i> 2 месяца бесплатно</li>
+                    <li><i class="fas fa-check"></i> Приоритет в новых функциях</li>
+                    <li><i class="fas fa-check"></i> Максимальная выгода</li>
+                </ul>
+                <button class="btn btn-block btn-primary" onclick="subscribe('yearly')" style="background:#00cc33; border-color:#00cc33;">
+                    <i class="fas fa-credit-card"></i> Подписаться за 2 490 ₽
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:24px; background:rgba(0,255,65,0.06); border-color:#00ff41;">
+            <p style="margin:0; text-align:center; font-size:0.95rem;">
+                <i class="fas fa-shield-halved"></i> 
+                Оплата безопасна. Подписку можно отменить в любой момент в разделе Профиль. 
+                Все данные остаются с вами.
+            </p>
+        </div>
+
+        <div style="text-align:center; margin-top:32px; opacity:0.7; font-size:0.85rem;">
+            Это демо-версия. Реальная оплата не производится — подписка активируется мгновенно.
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+        checkAuth();
+        renderNav('/subscription');
+
+        async function loadStatus() {
+            try {
+                const r = await fetch(`${API_URL}/profile`, { headers: getHeaders() });
+                if (!r.ok) throw new Error();
+                const u = await r.json();
+                localStorage.setItem('user', JSON.stringify(u));
+
+                const badge = document.getElementById('planBadge');
+                const nameEl = document.getElementById('planName');
+                const untilEl = document.getElementById('planUntil');
+                const hint = document.getElementById('upgradeHint');
+
+                if (u.is_premium && u.premium_until) {
+                    const untilDate = new Date(u.premium_until);
+                    const now = new Date();
+                    if (untilDate > now) {
+                        badge.className = 'status-badge premium';
+                        nameEl.textContent = 'Premium';
+                        untilEl.innerHTML = `Активна до <strong>${untilDate.toLocaleDateString('ru-RU')}</strong>`;
+                        hint.style.display = 'none';
+                        return;
+                    }
+                }
+                // Free or expired
+                badge.className = 'status-badge free';
+                nameEl.textContent = 'Бесплатный';
+                untilEl.textContent = 'Перейдите на Premium для полного доступа';
+                hint.style.display = 'block';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function subscribe(plan) {
+            const btns = document.querySelectorAll('.pricing-card button');
+            btns.forEach(b => b.disabled = true);
+
+            try {
+                const r = await fetch(`${API_URL}/subscribe`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ plan })
+                });
+                const data = await r.json();
+
+                if (!r.ok) {
+                    showNotification(data.error || 'Ошибка активации подписки', 'error');
+                    return;
+                }
+
+                showNotification(data.message || 'Подписка успешно активирована!', 'success');
+
+                // Обновляем статус
+                await loadStatus();
+
+                // Можно обновить профиль в localStorage
+                setTimeout(() => {
+                    window.location.reload(); // чтобы все обновилось
+                }, 1200);
+            } catch (e) {
+                showNotification('Не удалось связаться с сервером', 'error');
+            } finally {
+                btns.forEach(b => b.disabled = false);
+            }
+        }
+
+        // Инициализация
+        loadStatus();
+    </script>
+</body>
+</html>

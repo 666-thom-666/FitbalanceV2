@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FITBALANCE — О проекте</title>
+    <meta name="theme-color" content="#00ff41">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="navbar-brand"><i class="fas fa-heart-pulse"></i> FITBALANCE</a>
+        <div class="navbar-menu" id="topNav"></div>
+    </nav>
+    <div class="container">
+
+        <h1 class="page-title"><i class="fas fa-circle-info"></i> О проекте</h1>
+
+        <div class="card">
+            <div class="about-logo"><i class="fas fa-heart-pulse"></i></div>
+            <h2 style="text-align:center;margin:8px 0">FITBALANCE</h2>
+            <p style="text-align:center;color:var(--text-secondary)">Веб-сайт фитнес-трекер</p>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-star"></i> Возможности</h3>
+            <div class="feat-grid">
+                <div class="feat"><i class="fas fa-shoe-prints"></i><span>Шагомер (датчик движения)</span></div>
+                <div class="feat"><i class="fas fa-map-location-dot"></i><span>GPS-трекер пробежек</span></div>
+                <div class="feat"><i class="fas fa-dumbbell"></i><span>15 видов тренировок</span></div>
+                <div class="feat"><i class="fas fa-utensils"></i><span>Дневник питания и КБЖУ</span></div>
+                <div class="feat"><i class="fas fa-calculator"></i><span>Калькулятор калорий, ИМТ, БЖУ</span></div>
+                <div class="feat"><i class="fas fa-glass-water"></i><span>Учёт воды</span></div>
+                <div class="feat"><i class="fas fa-moon"></i><span>Мониторинг сна</span></div>
+                <div class="feat"><i class="fas fa-heart-pulse"></i><span>Пульс</span></div>
+                <div class="feat"><i class="fas fa-ruler"></i><span>Вес и замеры тела</span></div>
+                <div class="feat"><i class="fas fa-chart-line"></i><span>Графики прогресса</span></div>
+                <div class="feat"><i class="fas fa-trophy"></i><span>Достижения</span></div>
+                <div class="feat"><i class="fas fa-mobile-screen"></i><span>Установка как приложение (PWA)</span></div>
+                <div class="feat"><i class="fas fa-circle-half-stroke"></i><span>Тёмная и светлая темы</span></div>
+                <div class="feat"><i class="fas fa-bullseye"></i><span>Персональные цели</span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-layer-group"></i> Технологии</h3>
+            <div class="chips">
+                <span class="chip chip-static">Node.js</span>
+                <span class="chip chip-static">Express</span>
+                <span class="chip chip-static">SQLite</span>
+                <span class="chip chip-static">JWT</span>
+                <span class="chip chip-static">Chart.js</span>
+                <span class="chip chip-static">PWA / Service Worker</span>
+                <span class="chip chip-static">Geolocation API</span>
+                <span class="chip chip-static">DeviceMotion API</span>
+            </div>
+        </div>
+
+        <div class="card" style="text-align:center;color:var(--text-secondary);font-size:.9rem">
+            Дипломный проект · Разработка веб-сайта фитнес-трекера «FITBALANCE»
+        </div>
+
+    </div>
+    <nav class="bottom-nav" id="bottomNav"></nav>
+    <script src="/js/main.js"></script>
+    
+    <script>
+        checkAuth();
+        renderNav('/about');
+
+
+    </script>
+</body>
+</html>

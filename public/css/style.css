@@ -1,0 +1,378 @@
+/* ===================== FITBALANCE — тема ===================== */
+:root {
+    --bg-primary: #0a0e0a;
+    --bg-secondary: #111411;
+    --bg-card: #1a1f1a;
+    --bg-input: #2a2f2a;
+    --green-primary: #00ff41;
+    --green-dark: #00cc33;
+    --green-light: #66ff99;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-muted: #707070;
+    --border-color: #2a3a2a;
+    --danger: #ff4444;
+    --warning: #ffaa00;
+    --success: #00cc44;
+    --blue: #38bdf8;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --ring-track: #20281f;
+    --shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* Светлая тема */
+[data-theme="light"] {
+    --bg-primary: #f1f6f1;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-input: #eef3ee;
+    --green-primary: #0bab3f;
+    --green-dark: #0a9436;
+    --green-light: #2bbd5a;
+    --text-primary: #14201a;
+    --text-secondary: #4a564e;
+    --text-muted: #8a948c;
+    --border-color: #d9e4d9;
+    --ring-track: #e2ebe2;
+    --shadow: 0 4px 14px rgba(20,40,25,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .3s, color .3s;
+}
+
+/* ===================== Навигация (десктоп) ===================== */
+.navbar {
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--green-primary);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 20px rgba(0,255,65,0.08);
+}
+.navbar-brand {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--green-primary);
+    text-decoration: none;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: .5rem;
+}
+.navbar-menu { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: .5rem .9rem;
+    border-radius: 8px;
+    transition: all .2s;
+    font-weight: 500;
+    font-size: .95rem;
+    white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active {
+    color: var(--green-primary);
+    background: rgba(0,255,65,0.1);
+}
+.nav-link i { margin-right: .4rem; }
+
+/* ===================== Нижняя навигация (телефон) ===================== */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+    padding: .35rem .25rem calc(.35rem + env(safe-area-inset-bottom));
+    justify-content: space-around;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.25);
+}
+.bottom-nav a {
+    flex: 1;
+    text-align: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: .65rem;
+    padding: .35rem 0;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    transition: color .2s;
+}
+.bottom-nav a i { font-size: 1.15rem; }
+.bottom-nav a.active { color: var(--green-primary); }
+
+/* ===================== Контейнер ===================== */
+.container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+.page-title {
+    color: var(--green-primary);
+    margin-bottom: 1.2rem;
+    display: flex; align-items: center; gap: .6rem;
+    font-size: 1.5rem;
+}
+
+/* ===================== Карточки ===================== */
+.card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+.card-title {
+    font-size: 1.15rem;
+    color: var(--green-primary);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.muted { color: var(--text-secondary); }
+
+/* ===================== Кнопки ===================== */
+.btn {
+    padding: .75rem 1.4rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .5px;
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+}
+.btn-primary { background: var(--green-primary); color: #05140a; }
+.btn-primary:hover { background: var(--green-dark); box-shadow: 0 0 18px rgba(0,255,65,.35); }
+.btn-secondary { background: transparent; color: var(--green-primary); border: 2px solid var(--green-primary); }
+.btn-secondary:hover { background: rgba(0,255,65,.1); }
+.btn-danger { background: var(--danger); color: #fff; padding: .5rem .8rem; }
+.btn-block { width: 100%; }
+.btn-sm { padding: .5rem .9rem; font-size: .9rem; }
+.btn-ghost { background: var(--bg-input); color: var(--text-primary); }
+.btn-ghost:hover { background: var(--border-color); }
+
+/* ===================== Формы ===================== */
+.form-group { margin-bottom: 1.1rem; }
+.form-label { display: block; margin-bottom: .4rem; color: var(--text-secondary); font-weight: 500; font-size: .9rem; }
+.form-input, .form-select {
+    width: 100%;
+    padding: .75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--green-primary);
+    box-shadow: 0 0 0 3px rgba(0,255,65,.15);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+
+/* ===================== Auth ===================== */
+.auth-container {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+    padding: 1rem;
+}
+.auth-card { width: 100%; max-width: 420px; padding: 2.5rem; }
+.auth-logo { text-align: center; font-size: 2.6rem; color: var(--green-primary); margin-bottom: 1.5rem; }
+.auth-logo h1 { font-size: 1.8rem; letter-spacing: 3px; }
+
+/* ===================== Статистика / сетки ===================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+.stat-card {
+    background: var(--bg-card);
+    padding: 1.2rem;
+    border-radius: 14px;
+    border-left: 4px solid var(--green-primary);
+    text-align: center;
+}
+.stat-card.b-blue { border-left-color: var(--blue); }
+.stat-card.b-purple { border-left-color: var(--purple); }
+.stat-card.b-orange { border-left-color: var(--orange); }
+.stat-card.b-danger { border-left-color: var(--danger); }
+.stat-value { font-size: 2rem; font-weight: bold; color: var(--green-primary); }
+.stat-card.b-blue .stat-value { color: var(--blue); }
+.stat-card.b-purple .stat-value { color: var(--purple); }
+.stat-card.b-orange .stat-value { color: var(--orange); }
+.stat-card.b-danger .stat-value { color: var(--danger); }
+.stat-label { color: var(--text-secondary); margin-top: .3rem; font-size: .85rem; }
+.stat-card i.big-icon { font-size: 1.6rem; color: var(--green-primary); margin-bottom: .5rem; }
+
+/* ===================== Кольца активности ===================== */
+.rings-wrap { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+.ring-svg { width: 200px; height: 200px; }
+.ring-track { fill: none; stroke: var(--ring-track); }
+.ring-progress { fill: none; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 100px 100px; transition: stroke-dashoffset 1s ease; }
+.ring-legend { display: flex; flex-direction: column; gap: .7rem; }
+.ring-legend-item { display: flex; align-items: center; gap: .6rem; }
+.ring-dot { width: 12px; height: 12px; border-radius: 50%; }
+.ring-legend-item .lbl { color: var(--text-secondary); font-size: .85rem; }
+.ring-legend-item .val { font-weight: 700; font-size: 1.05rem; }
+
+/* ===================== Прогресс-бары ===================== */
+.progress-bar { height: 10px; background: var(--ring-track); border-radius: 6px; overflow: hidden; margin-top: .4rem; }
+.progress-fill { height: 100%; background: var(--green-primary); border-radius: 6px; transition: width .8s ease; }
+
+/* ===================== Таблицы ===================== */
+.table { width: 100%; border-collapse: collapse; }
+.table th { background: var(--bg-secondary); color: var(--green-primary); padding: .8rem; text-align: left; font-weight: 600; font-size: .85rem; }
+.table td { padding: .8rem; border-bottom: 1px solid var(--border-color); font-size: .9rem; }
+.table tr:hover { background: rgba(0,255,65,.04); }
+.table-wrap { overflow-x: auto; }
+
+/* ===================== Список записей ===================== */
+.log-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .9rem; border-radius: 12px; background: var(--bg-input);
+    margin-bottom: .6rem;
+}
+.log-item .li-main { display: flex; align-items: center; gap: .8rem; }
+.log-item .li-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: rgba(0,255,65,.12); color: var(--green-primary); font-size: 1.1rem; }
+.log-item .li-title { font-weight: 600; }
+.log-item .li-sub { font-size: .8rem; color: var(--text-muted); }
+
+/* ===================== Чипы быстрого выбора ===================== */
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.chip {
+    padding: .55rem 1rem; border-radius: 20px; background: var(--bg-input);
+    border: 1px solid var(--border-color); color: var(--text-primary);
+    cursor: pointer; font-size: .9rem; transition: all .2s;
+}
+.chip:hover, .chip.active { background: var(--green-primary); color: #05140a; border-color: var(--green-primary); }
+
+/* ===================== Достижения ===================== */
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; }
+.badge {
+    text-align: center; padding: 1.2rem .8rem; border-radius: 14px;
+    background: var(--bg-input); border: 1px solid var(--border-color);
+    opacity: .4; filter: grayscale(1); transition: all .3s;
+}
+.badge.unlocked { opacity: 1; filter: none; border-color: var(--green-primary); box-shadow: 0 0 14px rgba(0,255,65,.15); }
+.badge i { font-size: 2rem; color: var(--green-primary); margin-bottom: .5rem; }
+.badge .b-name { font-weight: 600; font-size: .85rem; }
+.badge .b-desc { font-size: .72rem; color: var(--text-muted); margin-top: .25rem; }
+
+/* ===================== Алерты ===================== */
+.alert { padding: .9rem; border-radius: 10px; margin-bottom: 1rem; font-weight: 500; }
+.alert-success { background: rgba(0,204,68,.12); border: 1px solid var(--success); color: var(--success); }
+.alert-error { background: rgba(255,68,68,.12); border: 1px solid var(--danger); color: var(--danger); }
+
+/* ===================== Утилиты ===================== */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 1rem; } .mt-2 { margin-top: 2rem; }
+.mb-1 { margin-bottom: 1rem; } .mb-2 { margin-bottom: 2rem; }
+.flex { display: flex; } .gap-1 { gap: 1rem; } .between { justify-content: space-between; } .center-y { align-items: center; }
+.grow { flex: 1; }
+.hidden { display: none !important; }
+
+/* Тумблер темы */
+.theme-toggle { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem; padding: .3rem; }
+
+/* Спиннер */
+.spinner { width: 36px; height: 36px; border: 4px solid var(--border-color); border-top: 4px solid var(--green-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 1rem auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Большая цифра шагомера */
+.big-counter { font-size: 3.4rem; font-weight: 800; color: var(--green-primary); text-align: center; letter-spacing: 1px; }
+.pulse { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.55;} }
+
+canvas { max-width: 100%; }
+
+/* ===================== Доп. компоненты страниц ===================== */
+/* Одиночное кольцо (вода) */
+.ring-wrap-single { position: relative; width: 200px; height: 200px; margin: 0 auto; }
+.ring-svg-single { width: 200px; height: 200px; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-center-sub { color: var(--text-secondary); font-size: .9rem; margin-top: .2rem; }
+.progress-sub { color: var(--text-secondary); font-size: .9rem; margin-top: .8rem; }
+
+/* Строчная форма (поле + кнопка) */
+.inline-form { display: flex; gap: .6rem; margin-top: .8rem; }
+.inline-form .form-input { flex: 1; }
+
+/* Список записей (новый вид) */
+.log-list { display: flex; flex-direction: column; gap: .6rem; }
+.log-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: rgba(255,255,255,.06); font-size: 1.1rem; flex-shrink: 0; }
+.log-item .log-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.log-item { gap: .8rem; }
+.log-main + .log-del, .log-item > .log-del { margin-left: auto; }
+.log-title { font-weight: 600; }
+.log-sub { font-size: .8rem; color: var(--text-muted); margin-top: .15rem; }
+.log-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: .4rem; transition: color .2s; }
+.log-del:hover { color: var(--danger); }
+.empty { color: var(--text-muted); text-align: center; padding: 1.2rem; }
+
+/* Сетка формы */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .8rem 1rem; margin-bottom: 1rem; }
+.form-grid .form-group { margin-bottom: 0; }
+.form-input-sm { width: auto; padding: .4rem .6rem; font-size: .9rem; }
+
+/* Кнопки доп. */
+.btn-outline { background: transparent; color: var(--green-primary); border: 2px solid var(--green-primary); }
+.btn-outline:hover { background: rgba(0,255,65,.1); }
+
+/* БЖУ */
+.macro-row { display: flex; gap: 1rem; }
+.macro-box { flex: 1; text-align: center; background: var(--bg-input); border-radius: 12px; padding: 1rem .5rem; }
+.macro-val { font-size: 1.6rem; font-weight: 800; color: var(--green-primary); }
+.macro-lbl { font-size: .8rem; color: var(--text-secondary); margin-top: .25rem; }
+
+/* Заметки / рекомендации */
+.note-line { padding: .5rem 0; color: var(--text-secondary); }
+.note-line strong { color: var(--text-primary); }
+
+/* Шапка карточки с действием справа */
+.card-head-row { display: flex; justify-content: space-between; align-items: center; }
+.card-head-row .card-title { margin-bottom: 0; }
+
+/* Достижения on/off */
+.badge.badge-on { opacity: 1; filter: none; border-color: var(--green-primary); box-shadow: 0 0 14px rgba(0,255,65,.15); }
+.badge.badge-off { opacity: .4; filter: grayscale(1); }
+.badge span { display: block; font-weight: 600; font-size: .82rem; margin-top: .4rem; }
+
+/* Заголовок группы приёма пищи */
+.meal-group-title { color: var(--green-primary); font-weight: 700; font-size: .9rem; margin: 1rem 0 .5rem; display: flex; align-items: center; gap: .5rem; }
+.meal-group-title:first-child { margin-top: 0; }
+
+/* Настройки (строка с переключателем) */
+.settings-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+
+/* О проекте */
+.about-logo { text-align: center; font-size: 3rem; color: var(--green-primary); }
+.feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .7rem; }
+.feat { display: flex; align-items: center; gap: .7rem; background: var(--bg-input); padding: .8rem; border-radius: 10px; font-size: .9rem; }
+.feat i { color: var(--green-primary); width: 22px; text-align: center; }
+.chip-static { cursor: default; }
+.chip-static:hover { background: var(--bg-input); color: var(--text-primary); border-color: var(--border-color); }
+
+/* ===================== Адаптив ===================== */
+@media (max-width: 768px) {
+    .navbar { display: none; }
+    .bottom-nav { display: flex; }
+    body { padding-bottom: 64px; }
+    .container { padding: 1rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .ring-svg { width: 170px; height: 170px; }
+    .page-title { font-size: 1.3rem; }
+}
